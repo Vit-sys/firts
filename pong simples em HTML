@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong para Celular</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+        }
+
+        #game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #111;
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="pong" width="320" height="480"></canvas>
+    </div>
+    <script>
+        const canvas = document.getElementById("pong");
+        const context = canvas.getContext("2d");
+
+        // Configurações do jogo
+        const ballRadius = 10;
+        const paddleWidth = 10;
+        const paddleHeight = 75;
+        const paddleSpeed = 20;
+        let leftPaddleY = (canvas.height - paddleHeight) / 2;
+        let rightPaddleY = (canvas.height - paddleHeight) / 2;
+        let ballX = canvas.width / 2;
+        let ballY = canvas.height / 2;
+        let ballSpeedX = 5;
+        let ballSpeedY = 5;
+
+        // Função para desenhar a bola
+        function drawBall() {
+            context.beginPath();
+            context.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            context.fillStyle = "#fff";
+            context.fill();
+            context.closePath();
+        }
+
+        // Função para desenhar as palhetas
+        function drawPaddles() {
+            context.fillStyle = "#fff";
+            context.fillRect(0, leftPaddleY, paddleWidth, paddleHeight); // Palheta esquerda
+            context.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight); // Palheta direita
+        }
+
+        // Função para mover a bola
+        function moveBall() {
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Colisão com o topo e fundo
+            if (ballY - ballRadius < 0 || ballY + ballRadius > canvas.height) {
+                ballSpeedY = -ballSpeedY;
+            }
+
+            // Colisão com as palhetas
+            if (ballX - ballRadius < paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            } else if (ballX + ballRadius > canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            // Se a bola sair da tela
+            if (ballX - ballRadius < 0 || ballX + ballRadius > canvas.width) {
+                resetBall();
+            }
+        }
+
+        // Função para resetar a bola
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = -ballSpeedX;
+            ballSpeedY = 5;
+        }
+
+        // Função para mover a palheta (controle via touch)
+        function movePaddle(event) {
+            const touchY = event.touches[0].clientY;
+            const paddleHeightCenter = paddleHeight / 2;
+
+            if (touchY - paddleHeightCenter > 0 && touchY + paddleHeightCenter < canvas.height) {
+                rightPaddleY = touchY - paddleHeightCenter;
+            }
+        }
+
+        // Função de atualização do jogo
+        function update() {
+            moveBall();
+            drawBall();
+            drawPaddles();
+        }
+
+        // Função de animação
+        function gameLoop() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            update();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Controle de touch para a palheta direita
+        canvas.addEventListener("touchmove", movePaddle, false);
+
+        // Iniciar o jogo
+        gameLoop();
+    </script>
+</body>
+</html>
